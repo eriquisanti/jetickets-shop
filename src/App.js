@@ -1,24 +1,45 @@
-import logo from './logo.svg';
-import './App.css';
+import { useEffect, useState } from "react";
+import { Content } from "./components/Content";
+import { Header } from "./components/Header";
+import { Proof } from "./components/Proof";
+import { api } from "./services/api";
+
+import { GlobalStyle } from "./style/global";
 
 function App() {
+  const [tickets, setTickets] = useState([]);
+  const [busca, setBusca] = useState("");
+  const [comprar, setComprar] = useState(false);
+  const [ticketComprado, setTicketComprado] = useState({});
+
+  function comp(ticket) {
+    setTicketComprado(ticket);
+    setComprar(true);
+  }
+
+  useEffect(() => {
+    api.get("/tickets").then((response) => setTickets(response.data.tickets));
+  }, [comprar, busca]);
+
+  const ticketsFiltrados = tickets.filter(
+    (ticket) =>
+      ticket.title.toLowerCase().includes(busca.toLowerCase())
+  );
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      {!comprar && (
+        <>
+          <Header
+            onChange={(event) => setBusca(event.target.value)}
+            value={busca}
+          />
+          <Content tickets={ticketsFiltrados} comp={comp} />
+        </>
+      )}
+      {comprar && <Proof ticket={ticketComprado} voltar={setComprar} />}
+      <GlobalStyle />
+    </>
   );
 }
 
